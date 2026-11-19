@@ -1,0 +1,88 @@
+# auditoria-binario-pre-review
+
+## Descrição
+Executa auditoria técnica pré-submissão nos arquivos de configuração, manifestos e dependências de um aplicativo mobile (iOS e Android) para identificar bloqueios conhecidos de revisão da App Store Connect e Google Play Console antes do upload do `.ipa` ou `.aab`.
+
+* **Quando usar:** antes de gerar a build de release para as lojas, após adicionar novos SDKs nativos, ao atualizar `targetSdkVersion` ou Xcode/iOS SDK, ou ao diagnosticar rejeições técnicas de revisão automatizada das lojas.
+* **Quando não usar:** redação de textos jurídicos/política de privacidade (usar `politica-dados-mobile`) ou geração de metadados promocionais (usar `release-notes-e-metadados`).
+
+## Princípio operacional
+Ambas as lojas executam análise estática automatizada no binário logo após o upload. Strings de permissão genéricas no iOS, SDKs sem `PrivacyInfo.xcprivacy`, permissões sensíveis sem declaração no Android ou APIs depreciadas reprovam o build antes mesmo da revisão humana. Toda verificação deve ser baseada nos arquivos reais do projeto.
+
+## Proibições
+* Aprovar configurações de build sem inspecionar os manifestos e arquivos de dependências declarados.
+* Sugerir remoção arbitrária de permissões sem validar se algum SDK de terceiros as injeta via *Manifest Merger* (Android) ou *CocoaPods/SPM* (iOS).
+* Ignorar requisitos de assinatura, obfuscação/símbolos de debug ou compatibilidade de arquitetura.
+* Gerar o relatório final com dados pendentes da Fase 0 ou Fase 1.
+
+## Fluxo obrigatório
+
+### Fase 0 - Verificação de escopo
+Confirmar os itens abaixo antes de iniciar a auditoria. Se faltar qualquer dado, interromper e perguntar:
+
+1. **Plataformas alvo:** iOS (App Store), Android (Google Play) ou ambas.
+2. **Stack do projeto:** Nativo (Swift/Kotlin), Flutter, React Native, Expo ou outro framework.
+3. **Arquivos de configuração disponíveis:** solicitar o conteúdo relevante conforme a plataforma:
+   * **iOS:** `Info.plist`, `PrivacyInfo.xcprivacy` (se existir) e `Podfile` / `Package.swift` / `pubspec.yaml` / `package.json`.
+   * **Android:** `AndroidManifest.xml`, `build.gradle` / `build.gradle.kts` (nível app) e lista de dependências.
+
+### Fase 1 - Questionário de mapeamento técnico
+Coletar item a item. Não avançar com lacunas.
+
+#### 1. Auditoria iOS — Manifestos e Apple Guidelines (Cláusula crítica 1)
+* **Purpose Strings (`Info.plist`):** para cada chave `NS*UsageDescription` presente (Câmera, Microfone, Fotos, Localização, Bluetooth, Contatos, Tracking/IDFA), verificar se o texto explica **concretamente o benefício ao usuário** com exemplo real (a Apple rejeita textos vagos como *"Precisamos acessar sua câmera"*).
+* **Privacy Manifest (`PrivacyInfo.xcprivacy`):** confirmar presença do arquivo de manifesto de privacidade declarando o uso de *Required Reason APIs* (ex: `UserDefaults`, file timestamp, disk space, system boot time) tanto do código próprio quanto dos SDKs de terceiros exigidos pela Apple.
+* **Autenticação social (Apple Guideline 4.8):** o app oferece login de terceiros (Google, Facebook, GitHub)? Se sim, o **Sign in with Apple** está implementado e com destaque equivalente?
+* **Exclusão de conta e IAP:** se há criação de conta, o fluxo de exclusão está acessível no app? Se há venda de conteúdo digital/assinatura, utiliza exclusivamente **StoreKit** (ou segue regras vigentes de link externo onde aplicável)?
+* **IPv6 e conectividade:** há chamadas de rede com IP literal hardcoded (rejeitado pela Apple) em vez de domínios DNS compatíveis com IPv6-only?
+
+#### 2. Auditoria Android — Manifest, SDK Target e Google Play Policies (Cláusula crítica 2)
+* **Nível de API (`targetSdkVersion` e `compileSdkVersion`):** confirmar se o `targetSdkVersion` atende ao nível mínimo obrigatório vigente do Google Play para novas submissões e atualizações.
+* **Permissões restritas (`AndroidManifest.xml`):** verificar presença de permissões de alto escrutínio:
+  * `ACCESS_BACKGROUND_LOCATION` (exige formulário e vídeo de justificativa no Console).
+  * `READ_MEDIA_IMAGES` / `READ_MEDIA_VIDEO` (Google exige uso do *Android Photo Picker* para acesso pontual, bloqueando permissão ampla sem justificativa core).
+  * `QUERY_ALL_PACKAGES`, `SYSTEM_ALERT_WINDOW`, `REQUEST_INSTALL_PACKAGES` ou `USE_EXACT_ALARM`.
+  * `com.google.android.gms.permission.AD_ID` (verificar se foi injetada por SDK como Firebase/AdMob e se bate com a declaração no Data Safety).
+* **Segurança de componentes e rede:**
+  * Componentes (`activity`, `service`, `receiver`, `provider`) com `intent-filter` possuem `android:exported` explicitamente definido (`true` ou `false`)?
+  * `android:usesCleartextTraffic` está `false` (ou restrito via `network_security_config.xml`)?
+* **Artefato e símbolos:** build gerada em formato **Android App Bundle (`.aab`)**, com R8/ProGuard habilitado e upload do arquivo de mapeamento (`mapping.txt` / símbolos nativos NDK) configurado.
+
+#### 3. Validação cruzada de produção (Cláusula crítica 3)
+* **Ambiente e chaves:** confirmar ausência de URLs de `localhost`, `staging` ou chaves de sandbox/teste embutidas na build de produção.
+* **Logs e debugging:** `android:debuggable` falso e logs sensíveis desabilitados em release.
+
+### Fase 2 - Checklist de validação da auditoria
+Antes de compilar o parecer técnico, verificar se todos os critérios abaixo foram avaliados:
+
+- [ ] Todas as permissões declaradas nos manifestos foram confrontadas com o uso funcional real.
+- [ ] Strings de permissão do `Info.plist` avaliadas contra critérios de rejeição da Apple (Guideline 5.1.1).
+- [ ] Presença de `PrivacyInfo.xcprivacy` e `Sign in with Apple` (quando aplicável) verificadas no iOS.
+- [ ] `targetSdkVersion`, `android:exported`, permissões restritas e `AD_ID` verificados no Android.
+- [ ] Consistência confirmada entre dependências compiladas e formulários de privacidade das lojas.
+
+Se qualquer item falhar por falta de arquivo ou resposta, retornar exclusivamente a pergunta objetiva referente ao dado ausente.
+
+### Fase 3 - Formato de saída
+Entregar em Markdown limpo, estruturado na seguinte ordem:
+
+1. **Resumo de Risco (Semáforo Técnico):**
+   * **Bloqueadores Críticos (Rejeição certa):** lista objetiva do que impede o envio imediato.
+   * **Alertas de Revisão (Risco moderado / exige justificativa):** permissões ou configurações que pedem declaração extra no painel da loja.
+   * **Itens Conformes:** o que já está validado nos arquivos analisados.
+2. **Plano de Correção por Arquivo:**
+   * Blocos exatos de ajuste (`Info.plist`, `PrivacyInfo.xcprivacy`, `AndroidManifest.xml`, `build.gradle`) prontos para aplicar no código.
+3. **Checklist de Build de Release:**
+   * Comandos/verificações finais antes de subir o `.aab` e o `.ipa` (verificação de assinatura, tamanho do binário, símbolos de crash e ambiente de produção).
+
+## Estilo e formato de revisão
+* **Tom:** técnico, direto e preventivo (postura de engenheiro de release / mobile architect). Sem rodeios.
+* **Correções pontuais:** quando o usuário solicitar ajuste em trecho específico, responder no formato:
+
+    <trecho analisado> // correção objetiva
+
+## Referências técnicas e de plataforma
+* Apple App Store Review Guidelines — Seções 2.1 (*App Completeness*), 4.8 (*Login Services*) e 5.1.1 (*Data Collection and Storage*).
+* Apple Developer Documentation — *Privacy manifest files (`PrivacyInfo.xcprivacy`)* e *Describing use of required reason API*.
+* Google Play Console Help — *Target API level requirements for Google Play apps* e *Permissions and APIs that Access Sensitive Information*.
+* Android Developers Documentation — *App Manifest Overview (`android:exported`)* e *Android Photo Picker*.
