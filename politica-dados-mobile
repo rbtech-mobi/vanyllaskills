@@ -3,14 +3,14 @@
 ## Descrição
 Gera minuta técnica de Política de Privacidade / Política de Uso de Dados para aplicativos mobile (iOS e Android) operando no Brasil, em conformidade com a LGPD (Lei nº 13.709/2018), Marco Civil da Internet (Lei nº 12.965/2014), resoluções vigentes da ANPD e diretrizes obrigatórias da App Store (Apple) e Google Play.
 
-* **Quando usar:** publicação ou atualização de apps iOS/Android nas lojas, preenchimento de *Privacy Nutrition Labels* (App Store) e *Data Safety* (Google Play), adequação de app mobile à LGPD.
+* **Quando usar:** publicação ou atualização de apps iOS/Android nas lojas, preenchimento de *Privacy Nutrition Labels* (App Store) e *Data Safety* (Google Play), adequação de app mobile à LGPD (incluindo apps com anúncios, assinaturas ou recursos de IA).
 * **Quando não usar:** parecer jurídico formal, defesa administrativa ou judicial, redação de DPA, elaboração de RIPD. Nesses casos, encerrar e orientar revisão por advogado especializado.
 
 ## Princípio operacional
-Política genérica gera rejeição na esteira de revisão das lojas e passivo na ANPD. Se as permissões do sistema operacional, SDKs embutidos no binário e fluxos de exclusão de conta não forem mapeados, o documento é tecnicamente inválido.
+Política genérica gera rejeição na esteira de revisão das lojas e passivo na ANPD. Se as permissões do sistema operacional, SDKs embutidos no binário, fluxos de monetização, chamadas a APIs de IA e exclusão de conta não forem mapeados, o documento é tecnicamente inválido.
 
 ## Proibições
-* Inferir permissões do SO, SDKs, finalidade, base legal ou prazo de retenção não declarados.
+* Inferir permissões do SO, SDKs, finalidade, base legal, retenção ou políticas de provedores de IA/Ads não declarados.
 * Utilizar expressões genéricas (ex: *"coletamos dados do dispositivo para melhorar o app"*) sem vincular atributo técnico, finalidade e base legal.
 * Omitir fluxos obrigatórios de exclusão de conta in-app exigidos pela Apple e Google.
 * Gerar a minuta final com campos pendentes da Fase 0 ou Fase 1.
@@ -47,22 +47,35 @@ Mapear cada categoria de dado e permissão na estrutura:
 * **Inválido:** `Permissão de localização | Oferecer recursos personalizados`
 * **Nota sobre Legítimo Interesse (art. 7º, IX):** se utilizado, exigir descrição da finalidade legítima, expectativa do titular e confirmação de existência do teste de balanceamento (LIA).
 
-#### 3. SDKs de terceiros, rastreamento e subprocessadores (Cláusula crítica 2)
+#### 3. SDKs de terceiros, Ads e rastreamento (Cláusula crítica 2)
 * **Papel do app:** atua como **Controlador**, **Operador** (ex: app B2B white-label ou corporativo) ou ambos?
-* **SDKs embutidos no binário e infraestrutura backend:** listar todos os serviços externos (`Fornecedor / SDK | Função | Dados coletados ou compartilhados | País do servidor`). Cobrir: backend/cloud, analytics (ex: Firebase Analytics, Mixpanel), crash reporting (ex: Crashlytics, Sentry), push notifications (ex: OneSignal, FCM), anúncios/atribuição (ex: AdMob, AppsFlyer), pagamentos/assinaturas (StoreKit, Google Play Billing, RevenueCat, Stripe) e APIs de IA/LLM (informar se há retenção para treino).
-* **Rastreamento entre apps/sites (iOS ATT & Google Play Data Safety):** o app cruza dados do dispositivo/usuário com dados de terceiros para publicidade direcionada ou mensuração de anúncios? Se sim no iOS, confirmar implementação do prompt *App Tracking Transparency (ATT)* e comportamento do app caso o usuário recuse o rastreamento.
+* **SDKs embutidos no binário e infraestrutura backend:** listar todos os serviços externos (`Fornecedor / SDK | Função | Dados coletados ou compartilhados | País do servidor`). Cobrir: backend/cloud, analytics (ex: Firebase Analytics, Mixpanel), crash reporting (ex: Crashlytics, Sentry), push notifications (ex: OneSignal, FCM) e atribuição (ex: AppsFlyer).
+* **Publicidade e mediação de anúncios (se aplicável):**
+  * Quais redes/mediadores estão integrados (ex: Google AdMob, AppLovin, Meta Audience Network) e se há verificação via `app-ads.txt`.
+  * O app utiliza CMP / UMP SDK para obter consentimento entre **anúncios personalizados** e **não personalizados**?
+  * Há transmissão de sinais do dispositivo (IDFA/AAID, IP, eventos de impressão/clique) para parceiros de *Real-Time Bidding* (RTB)?
+* **Rastreamento entre apps/sites (iOS ATT & Google Play Data Safety):** o app cruza dados do dispositivo/usuário com dados de terceiros para publicidade direcionada ou mensuração? Se sim no iOS, confirmar implementação do prompt *App Tracking Transparency (ATT)* e comportamento do app caso o usuário recuse.
 * **Transferência internacional (Resolução ANPD nº 19/2024):** para servidores/SDKs fora do Brasil (ex: EUA/Europa), indicar país de destino e mecanismo adotado (Cláusulas-Padrão Contratuais da ANPD, país com nível adequado ou consentimento específico).
 
-#### 4. Compras In-App (IAP) e assinaturas (se aplicável)
-* **Processamento financeiro:** confirmar se os pagamentos ocorrem via **Apple In-App Purchase (StoreKit)**, **Google Play Billing** ou gateway externo. Especificar que dados de cartão são processados pela loja/gateway e que o backend recebe apenas tokens/recibos de validação de status da assinatura.
+#### 4. Cobrança, assinaturas e prevenção a fraude (se aplicável)
+* **Processamento financeiro:** confirmar se os pagamentos ocorrem via **Apple In-App Purchase (StoreKit)**, **Google Play Billing**, orquestradores (ex: RevenueCat, Adapty) ou gateway externo (ex: Stripe, Pagar.me).
+* **Escopo dos dados financeiros:** especificar que dados sensíveis de cartão (PAN/CVV) são processados diretamente pela loja/gateway e que o backend recebe apenas `transaction_id`, tokens de recibo, status de renovação e histórico de reembolso/estorno (*chargeback*).
+* **Antifraude e guarda pós-cancelamento:** quais metadados (IP, device ID, histórico de transações) são analisados para prevenção a fraude (LGPD art. 7º, IX ou art. 11, II, g) e por quanto tempo ficam retidos após cancelamento para defesa em disputas de chargeback.
 
-#### 5. Ciclo de vida, retenção e exclusão de conta in-app (Cláusula crítica 3)
+#### 5. Recursos de Inteligência Artificial e LLMs (se aplicável)
+* **Provedores e modelos:** quais APIs ou modelos são utilizados (ex: OpenAI, Anthropic, Google Gemini, modelos self-hosted) e em qual país ocorre a inferência.
+* **Dados enviados nos prompts/contexto:** quais informações do usuário (texto digitado, documentos, áudio, imagens, metadados de perfil) são transmitidas para o modelo.
+* **Política de retenção e treino:** confirmar se a integração opera sob *Zero Data Retention* (ZDR) / opt-out contratual de treinamento, ou se os dados enviados podem ser usados pelo provedor para treinar modelos.
+* **Sanitização (PII Scrubbing):** há anonimização ou mascaramento de dados pessoais (nome, CPF, e-mail) antes do envio ao provedor de IA?
+* **Decisões automatizadas (LGPD art. 20):** a IA toma decisões que afetam direitos ou acesso do usuário (ex: bloqueio de conta, aprovação de crédito, ranqueamento) sem revisão humana? Se sim, descrever os critérios gerais e o canal para solicitar revisão humana.
+
+#### 6. Ciclo de vida, retenção e exclusão de conta in-app (Cláusula crítica 3)
 * **Retenção ativa:** prazo de guarda de cada categoria de dado enquanto a conta existir.
 * **Exclusão de conta self-service (Apple Guideline 5.1.1(v) & Google Play):** caminho exato dentro do app para excluir a conta (ex: *Perfil > Configurações > Excluir conta*), prazo em dias para expurgo definitivo após a solicitação e **URL web pública** para solicitação de exclusão caso o usuário já tenha desinstalado o aplicativo.
 * **Exceções legais de guarda:** dados retidos após a exclusão da conta e norma aplicável (ex: registros de acesso à aplicação por 6 meses conforme art. 15 do Marco Civil da Internet; comprovantes fiscais e transações por 5 anos conforme legislação tributária).
 * **Procedimento técnico de descarte:** método aplicado (hard delete, expurgo lógico ou anonimização irreversível), área/sistema responsável e prazo de expurgo dos backups.
 
-#### 6. Direitos do titular (LGPD art. 18), segurança e incidentes
+#### 7. Direitos do titular (LGPD art. 18), segurança e incidentes
 * **Canal e SLA:** meio oficial de solicitação e prazo de atendimento (15 dias para declaração completa, conforme art. 19, II, da LGPD).
 * **Fluxo operacional:** atendimento de acesso, correção, portabilidade (formato estruturado exportável), revogação de permissões no SO e oposição.
 * **Controles de segurança:** comunicação via HTTPS/TLS, armazenamento local seguro (Keychain no iOS / EncryptedSharedPreferences ou Keystore no Android), controle de acesso no backend (RBAC/IAM) e autenticação via tokens (JWT/OAuth).
@@ -74,7 +87,9 @@ Antes de compilar a saída, verificar se todos os critérios abaixo são verdade
 - [ ] Todos os dados e permissões de hardware/SO possuem finalidade técnica específica, base legal e indicação de obrigatoriedade.
 - [ ] Zero frases vagas ou genéricas de finalidade.
 - [ ] Todos os SDKs compilados no app e subprocessadores listados com função, dados tratados e país de hospedagem.
-- [ ] Conformidade de rastreamento declarada (uso ou ausência de IDFA/AAID e fluxo ATT no iOS).
+- [ ] Conformidade de publicidade e rastreamento declarada (uso ou ausência de Ads/RTB, CMP, IDFA/AAID e fluxo ATT no iOS).
+- [ ] Fluxo de cobrança/IAP e regras de retenção antifraude/chargeback declarados (quando aplicável).
+- [ ] Provedores de IA, regras de não-treinamento/retenção e direito à revisão humana declarados (quando aplicável).
 - [ ] Transferência internacional documentada com mecanismo da Resolução ANPD nº 19/2024 (ou ausência confirmada).
 - [ ] Fluxo de exclusão de conta in-app e link web externo documentados (quando o app possui criação de conta).
 - [ ] Regras de retenção e expurgo definidas por categoria, incluindo backup e exceções legais (Marco Civil / Fiscal).
@@ -91,14 +106,15 @@ Entregar o documento em Markdown limpo, estruturado na seguinte ordem:
 3. **Seções textuais:**
    * `1. Dados Pessoais e Permissões do Dispositivo` (separando dados cadastrais, permissões de hardware/SO e telemetria)
    * `2. Finalidades e Bases Legais` (subdividido por finalidade operacional)
-   * `3. SDKs de Terceiros, Subprocessadores e Rastreamento` (incluindo tabela de SDKs/fornecedores e regras de ATT/IDFA/AAID)
-   * `4. Compras no Aplicativo e Assinaturas` (se aplicável)
-   * `5. Transferência Internacional de Dados`
-   * `6. Retenção e Exclusão de Conta e Dados` (incluindo passo a passo in-app, link web, prazos de backup e guarda legal)
-   * `7. Direitos dos Titulares e Como Exercê-los`
-   * `8. Segurança da Informação e Resposta a Incidentes`
-   * `9. Privacidade de Crianças e Adolescentes`
-   * `10. Alterações desta Política e Contato`
+   * `3. SDKs de Terceiros, Publicidade e Rastreamento` (incluindo tabela de SDKs/fornecedores, regras de Ads/CMP e ATT/IDFA/AAID)
+   * `4. Compras no Aplicativo, Assinaturas e Antifraude` (se aplicável)
+   * `5. Uso de Inteligência Artificial e Decisões Automatizadas` (se aplicável)
+   * `6. Transferência Internacional de Dados`
+   * `7. Retenção e Exclusão de Conta e Dados` (incluindo passo a passo in-app, link web, prazos de backup e guarda legal)
+   * `8. Direitos dos Titulares e Como Exercê-los`
+   * `9. Segurança da Informação e Resposta a Incidentes`
+   * `10. Privacidade de Crianças e Adolescentes`
+   * `11. Alterações desta Política e Contato`
 4. **Aviso final obrigatório:**
    > *Nota técnica: Esta minuta foi gerada a partir do mapeamento operacional informado pela equipe de produto/engenharia. Não constitui parecer jurídico e deve ser validada por advogado antes da publicação.*
 
@@ -109,11 +125,7 @@ Entregar o documento em Markdown limpo, estruturado na seguinte ordem:
     <trecho analisado> // correção objetiva
 
 ## Referências normativas e de plataforma
-* Lei nº 13.709/2018 — Lei Geral de Proteção de Dados Pessoais (LGPD).
+* Lei nº 13.709/2018 — Lei Geral de Proteção de Dados Pessoais (LGPD — arts. 7º, 11, 14, 18 e 20).
 * Lei nº 12.965/2014 — Marco Civil da Internet (art. 15 — guarda de registros de acesso).
 * Resolução CD/ANPD nº 2/2022 — Regulamento de aplicação da LGPD para agentes de pequeno porte.
-* Resolução CD/ANPD nº 15/2024 — Regulamento de Comunicação de Incidente de Segurança (CIS).
-* Resolução CD/ANPD nº 18/2024 — Regulamento sobre a atuação do Encarregado pelo Tratamento de Dados Pessoais.
-* Resolução CD/ANPD nº 19/2024 — Regulamento de Transferência Internacional de Dados.
-* Apple App Store Review Guidelines — Seção 5.1 (Privacy, Data Collection, App Tracking Transparency e Account Deletion).
-* Google Play Developer Program Policies — User Data, Data Safety e Account Deletion Requirements.
+* Resolução CD/ANPD nº 15/
