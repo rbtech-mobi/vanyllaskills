@@ -1,0 +1,119 @@
+# politica-dados-mobile
+
+## Descrição
+Gera minuta técnica de Política de Privacidade / Política de Uso de Dados para aplicativos mobile (iOS e Android) operando no Brasil, em conformidade com a LGPD (Lei nº 13.709/2018), Marco Civil da Internet (Lei nº 12.965/2014), resoluções vigentes da ANPD e diretrizes obrigatórias da App Store (Apple) e Google Play.
+
+* **Quando usar:** publicação ou atualização de apps iOS/Android nas lojas, preenchimento de *Privacy Nutrition Labels* (App Store) e *Data Safety* (Google Play), adequação de app mobile à LGPD.
+* **Quando não usar:** parecer jurídico formal, defesa administrativa ou judicial, redação de DPA, elaboração de RIPD. Nesses casos, encerrar e orientar revisão por advogado especializado.
+
+## Princípio operacional
+Política genérica gera rejeição na esteira de revisão das lojas e passivo na ANPD. Se as permissões do sistema operacional, SDKs embutidos no binário e fluxos de exclusão de conta não forem mapeados, o documento é tecnicamente inválido.
+
+## Proibições
+* Inferir permissões do SO, SDKs, finalidade, base legal ou prazo de retenção não declarados.
+* Utilizar expressões genéricas (ex: *"coletamos dados do dispositivo para melhorar o app"*) sem vincular atributo técnico, finalidade e base legal.
+* Omitir fluxos obrigatórios de exclusão de conta in-app exigidos pela Apple e Google.
+* Gerar a minuta final com campos pendentes da Fase 0 ou Fase 1.
+* Declarar conformidade legal definitiva. Toda entrega é uma **minuta técnica** sujeita à validação jurídica.
+
+## Fluxo obrigatório
+
+### Fase 0 - Verificação de escopo
+Confirmar todos os itens abaixo antes de iniciar o mapeamento. Se faltar qualquer dado, interromper e perguntar:
+
+1. **Identificação do Controlador:** Razão social (ou nome completo se desenvolvedor pessoa física), CNPJ/CPF, endereço físico e e-mail de contato.
+2. **Encarregado (DPO) ou Canal do Titular:** Nome completo (se PF) ou razão social + responsável (se PJ) e e-mail do encarregado (Resolução ANPD nº 18/2024). Caso se enquadre na dispensa para agentes de pequeno porte (Resolução ANPD nº 2/2022), informar o canal obrigatório de comunicação com o titular.
+3. **Aplicativo e Lojas:** Nome do app, Bundle ID / Package Name, plataformas de publicação (App Store, Google Play ou ambas), URL de suporte/landing page e público-alvo (B2C, B2B ou híbrido).
+4. **Status documental:** Se já existe política publicada. Em caso positivo, solicitar o texto atual para análise comparativa.
+
+### Fase 1 - Questionário de mapeamento
+Coletar item a item. Não avançar com lacunas ou placeholders.
+
+#### 1. Inventário de dados, permissões do SO e telemetria
+* **Dados cadastrais e de conta:** quais atributos o usuário informa (ex: nome, e-mail, CPF, telefone, foto de perfil, autenticação social via Sign in with Apple / Google Sign-In).
+* **Permissões de hardware e sistema:** quais recursos são solicitados em tempo de execução:
+  * **Localização:** precisa (GPS) ou aproximada (rede); apenas em primeiro plano (*When In Use*) ou também em segundo plano (*Always/Background*).
+  * **Mídia e arquivos:** câmera, microfone, galeria de fotos, armazenamento local.
+  * **Sensores e conectividade:** Bluetooth, NFC, contatos, calendário, saúde (HealthKit / Health Connect).
+  * **Biometria (FaceID / TouchID / BiometricPrompt):** confirmar se a validação ocorre exclusivamente no enclave seguro do aparelho ou se há envio de template biométrico para servidor externo (dado sensível — art. 11, LGPD).
+* **Identificadores e telemetria:** coleta de IDFA (iOS), AAID / Advertising ID (Android), IDFV, tokens de push notification (APNs / FCM), modelo do aparelho, versão do SO, endereço IP e logs de crash/diagnóstico.
+* **Crianças e adolescentes (art. 14, LGPD / Families Policy):** classificação indicativa nas lojas; o app é direcionado ou permite cadastro de menores de 18 anos (ou menores de 13 anos conforme regras das lojas)? Se sim, qual o mecanismo de consentimento parental verificável?
+
+#### 2. Finalidade e base legal por dado (Cláusula crítica 1)
+Mapear cada categoria de dado e permissão na estrutura:
+`Dado ou Permissão | Finalidade técnica específica | Base legal (LGPD art. 7º ou 11) | Obrigatório ou Opcional`
+
+* **Válido:** `Localização precisa (primeiro plano) | Calcular frete e exibir lojas num raio de 5 km | Execução de contrato (art. 7º, V) | Opcional (usuário pode digitar o CEP manualmente)`
+* **Inválido:** `Permissão de localização | Oferecer recursos personalizados`
+* **Nota sobre Legítimo Interesse (art. 7º, IX):** se utilizado, exigir descrição da finalidade legítima, expectativa do titular e confirmação de existência do teste de balanceamento (LIA).
+
+#### 3. SDKs de terceiros, rastreamento e subprocessadores (Cláusula crítica 2)
+* **Papel do app:** atua como **Controlador**, **Operador** (ex: app B2B white-label ou corporativo) ou ambos?
+* **SDKs embutidos no binário e infraestrutura backend:** listar todos os serviços externos (`Fornecedor / SDK | Função | Dados coletados ou compartilhados | País do servidor`). Cobrir: backend/cloud, analytics (ex: Firebase Analytics, Mixpanel), crash reporting (ex: Crashlytics, Sentry), push notifications (ex: OneSignal, FCM), anúncios/atribuição (ex: AdMob, AppsFlyer), pagamentos/assinaturas (StoreKit, Google Play Billing, RevenueCat, Stripe) e APIs de IA/LLM (informar se há retenção para treino).
+* **Rastreamento entre apps/sites (iOS ATT & Google Play Data Safety):** o app cruza dados do dispositivo/usuário com dados de terceiros para publicidade direcionada ou mensuração de anúncios? Se sim no iOS, confirmar implementação do prompt *App Tracking Transparency (ATT)* e comportamento do app caso o usuário recuse o rastreamento.
+* **Transferência internacional (Resolução ANPD nº 19/2024):** para servidores/SDKs fora do Brasil (ex: EUA/Europa), indicar país de destino e mecanismo adotado (Cláusulas-Padrão Contratuais da ANPD, país com nível adequado ou consentimento específico).
+
+#### 4. Compras In-App (IAP) e assinaturas (se aplicável)
+* **Processamento financeiro:** confirmar se os pagamentos ocorrem via **Apple In-App Purchase (StoreKit)**, **Google Play Billing** ou gateway externo. Especificar que dados de cartão são processados pela loja/gateway e que o backend recebe apenas tokens/recibos de validação de status da assinatura.
+
+#### 5. Ciclo de vida, retenção e exclusão de conta in-app (Cláusula crítica 3)
+* **Retenção ativa:** prazo de guarda de cada categoria de dado enquanto a conta existir.
+* **Exclusão de conta self-service (Apple Guideline 5.1.1(v) & Google Play):** caminho exato dentro do app para excluir a conta (ex: *Perfil > Configurações > Excluir conta*), prazo em dias para expurgo definitivo após a solicitação e **URL web pública** para solicitação de exclusão caso o usuário já tenha desinstalado o aplicativo.
+* **Exceções legais de guarda:** dados retidos após a exclusão da conta e norma aplicável (ex: registros de acesso à aplicação por 6 meses conforme art. 15 do Marco Civil da Internet; comprovantes fiscais e transações por 5 anos conforme legislação tributária).
+* **Procedimento técnico de descarte:** método aplicado (hard delete, expurgo lógico ou anonimização irreversível), área/sistema responsável e prazo de expurgo dos backups.
+
+#### 6. Direitos do titular (LGPD art. 18), segurança e incidentes
+* **Canal e SLA:** meio oficial de solicitação e prazo de atendimento (15 dias para declaração completa, conforme art. 19, II, da LGPD).
+* **Fluxo operacional:** atendimento de acesso, correção, portabilidade (formato estruturado exportável), revogação de permissões no SO e oposição.
+* **Controles de segurança:** comunicação via HTTPS/TLS, armazenamento local seguro (Keychain no iOS / EncryptedSharedPreferences ou Keystore no Android), controle de acesso no backend (RBAC/IAM) e autenticação via tokens (JWT/OAuth).
+* **Gestão de incidentes (Resolução ANPD nº 15/2024):** comunicação à ANPD e aos titulares em caso de incidente com risco ou dano relevante (prazo legal de 3 dias úteis, ou 6 dias úteis para agentes de pequeno porte).
+
+### Fase 2 - Checklist de validação
+Antes de compilar a saída, verificar se todos os critérios abaixo são verdadeiros:
+
+- [ ] Todos os dados e permissões de hardware/SO possuem finalidade técnica específica, base legal e indicação de obrigatoriedade.
+- [ ] Zero frases vagas ou genéricas de finalidade.
+- [ ] Todos os SDKs compilados no app e subprocessadores listados com função, dados tratados e país de hospedagem.
+- [ ] Conformidade de rastreamento declarada (uso ou ausência de IDFA/AAID e fluxo ATT no iOS).
+- [ ] Transferência internacional documentada com mecanismo da Resolução ANPD nº 19/2024 (ou ausência confirmada).
+- [ ] Fluxo de exclusão de conta in-app e link web externo documentados (quando o app possui criação de conta).
+- [ ] Regras de retenção e expurgo definidas por categoria, incluindo backup e exceções legais (Marco Civil / Fiscal).
+- [ ] Canal de exercício de direitos e identidade/contato do Encarregado (DPO) preenchidos.
+- [ ] Data de vigência e controle de versão incluídos.
+
+Se qualquer item falhar, retornar exclusivamente a pergunta objetiva referente ao dado ausente.
+
+### Fase 3 - Formato de saída
+Entregar o documento em Markdown limpo, estruturado na seguinte ordem:
+
+1. **Cabeçalho:** Controlador, CNPJ/CPF, endereço, aplicativo(s) coberto(s), canal/Encarregado (DPO), versão e data de atualização.
+2. **Matriz resumo (Tabela):** `Dado / Permissão | Finalidade | Base Legal | Retenção | Compartilhado com`
+3. **Seções textuais:**
+   * `1. Dados Pessoais e Permissões do Dispositivo` (separando dados cadastrais, permissões de hardware/SO e telemetria)
+   * `2. Finalidades e Bases Legais` (subdividido por finalidade operacional)
+   * `3. SDKs de Terceiros, Subprocessadores e Rastreamento` (incluindo tabela de SDKs/fornecedores e regras de ATT/IDFA/AAID)
+   * `4. Compras no Aplicativo e Assinaturas` (se aplicável)
+   * `5. Transferência Internacional de Dados`
+   * `6. Retenção e Exclusão de Conta e Dados` (incluindo passo a passo in-app, link web, prazos de backup e guarda legal)
+   * `7. Direitos dos Titulares e Como Exercê-los`
+   * `8. Segurança da Informação e Resposta a Incidentes`
+   * `9. Privacidade de Crianças e Adolescentes`
+   * `10. Alterações desta Política e Contato`
+4. **Aviso final obrigatório:**
+   > *Nota técnica: Esta minuta foi gerada a partir do mapeamento operacional informado pela equipe de produto/engenharia. Não constitui parecer jurídico e deve ser validada por advogado antes da publicação.*
+
+## Estilo e formato de revisão
+* **Tom:** técnico, objetivo e direto. Frases curtas. Sem linguagem promocional.
+* **Correções pontuais:** quando o usuário solicitar ajuste em trecho específico, responder no formato:
+
+    <trecho analisado> // correção objetiva
+
+## Referências normativas e de plataforma
+* Lei nº 13.709/2018 — Lei Geral de Proteção de Dados Pessoais (LGPD).
+* Lei nº 12.965/2014 — Marco Civil da Internet (art. 15 — guarda de registros de acesso).
+* Resolução CD/ANPD nº 2/2022 — Regulamento de aplicação da LGPD para agentes de pequeno porte.
+* Resolução CD/ANPD nº 15/2024 — Regulamento de Comunicação de Incidente de Segurança (CIS).
+* Resolução CD/ANPD nº 18/2024 — Regulamento sobre a atuação do Encarregado pelo Tratamento de Dados Pessoais.
+* Resolução CD/ANPD nº 19/2024 — Regulamento de Transferência Internacional de Dados.
+* Apple App Store Review Guidelines — Seção 5.1 (Privacy, Data Collection, App Tracking Transparency e Account Deletion).
+* Google Play Developer Program Policies — User Data, Data Safety e Account Deletion Requirements.
