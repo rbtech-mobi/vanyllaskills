@@ -1,108 +1,112 @@
-Nome
-politica-uso-dados
+# politica-uso-dados
 
-Descrição
-Gerar Política de Privacidade / Política de Uso de Dados para SaaS, conforme LGPD (Lei 13.709/2018), a partir da operação real do produto. Não gera a partir de template genérico. Não gera sem mapeamento.
+## Descrição
+Gera minuta técnica de Política de Privacidade / Política de Uso de Dados para aplicações SaaS operando no Brasil, em conformidade com a LGPD (Lei nº 13.709/2018), Marco Civil da Internet (Lei nº 12.965/2014) e resoluções vigentes da ANPD, mapeada a partir da arquitetura e operação real do software.
 
-Use quando o usuário pedir: política de privacidade, política de uso de dados, termo de privacidade, adequação LGPD de SaaS, revisão de política existente.
+* **Quando usar:** criação de política de privacidade para SaaS, adequação de produto à LGPD, revisão de política existente frente à arquitetura atual.
+* **Quando não usar:** parecer jurídico formal, defesa administrativa ou judicial, redação de DPA (Data Processing Agreement), elaboração de RIPD (Relatório de Impacto). Nesses casos, encerrar e orientar revisão por advogado especializado.
 
-Não use para: parecer jurídico, defesa em processo, DPA / contrato com operador, RIPD. Para esses, orientar revisão por advogado.
+## Princípio operacional
+Política genérica não reflete o fluxo real de dados da aplicação. Sem o mapeamento de coleta, armazenamento, subprocessadores e ciclo de vida no banco de dados, o documento é tecnicamente inválido.
 
-Princípio central
-Política pronta não conhece a operação. Se a operação não foi mapeada, a política está incompleta.
+## Proibições
+* Inferir finalidade, base legal, prazo de retenção ou subprocessador não declarado.
+* Utilizar expressões genéricas (ex: *"usamos seus dados para melhorar o serviço"*) sem vincular dado específico, finalidade técnica e hipótese legal.
+* Reutilizar cláusulas de terceiros sem validação da operação.
+* Gerar a minuta final com campos pendentes da Fase 0 ou Fase 1.
+* Declarar conformidade legal definitiva. Toda entrega é uma **minuta técnica** sujeita à validação jurídica.
 
-Proibido:
+## Fluxo obrigatório
 
-Inferir finalidade, base legal, prazo de retenção ou processador.
-Usar frases genéricas como "usamos seus dados para melhorar o serviço" sem especificar dado, finalidade e base.
-Copiar cláusula de outro SaaS.
-Gerar política final sem respostas do questionário da Fase 1.
-Afirmar conformidade definitiva. Saída é minuta técnica para revisão por advogado.
-Fluxo obrigatório
-Fase 0 - Verificação
-Antes de qualquer texto, confirmar:
+### Fase 0 - Verificação de escopo
+Confirmar todos os itens abaixo antes de iniciar o mapeamento. Se faltar qualquer dado, interromper e perguntar:
 
-Nome / razão social do controlador, CNPJ, endereço, contato, DPO / encarregado (se houver).
-URL do SaaS, o que o produto faz, quem é o usuário (B2B, B2C, ambos).
-Se já existe política atual. Se sim, solicitar texto atual para revisão comparativa.
-Se qualquer item faltar, interromper e perguntar. Não continuar com suposição.
+1. **Identificação do Controlador:** Razão social, CNPJ, endereço físico e e-mail de contato.
+2. **Encarregado (DPO) ou Canal do Titular:** Nome completo (se PF) ou razão social + responsável (se PJ) e e-mail do encarregado (Resolução ANPD nº 18/2024). Caso a empresa se enquadre na dispensa para agentes de pequeno porte (Resolução ANPD nº 2/2022), informar o canal obrigatório de comunicação com o titular.
+3. **Produto e Modelo:** URL da aplicação, resumo funcional do SaaS e perfil dos usuários (B2B, B2C ou híbrido).
+4. **Status documental:** Se já existe política publicada. Em caso positivo, solicitar o texto atual para análise comparativa.
 
-Fase 1 - Questionário de mapeamento (obrigatório)
-Coletar, item a item. Não avançar com campo em branco.
+### Fase 1 - Questionário de mapeamento
+Coletar item a item. Não avançar com lacunas ou placeholders.
 
-Dados coletados
-Quais dados pessoais? Ex: nome, e-mail, CPF, telefone, endereço, dados de pagamento, logs, IP, cookies.
-Quais dados sensíveis? Ex: saúde, biometria. Se houver, sinalizar regime reforçado.
-Dados de menores? Se sim, idade mínima e mecanismo de consentimento parental.
-Origem: fornecido pelo titular, coletado automaticamente, recebido de terceiro. Qual terceiro?
-Finalidade + Base legal por dado — Cláusula 1 (crítica)
-Para cada dado, preencher:
-Dado	Finalidade específica	Base legal LGPD art. 7	Necessidade
-Exemplo correto: "E-mail	Criar conta e permitir login	Execução de contrato	Sem e-mail, login inviável"
-Exemplo incorreto: "Dados	Melhorar serviço"		
-Bases possíveis: consentimento, execução de contrato, obrigação legal, legítimo interesse (exigir LIA), proteção da vida, tutela da saúde, exercício regular de direitos, etc. Se base = legítimo interesse, descrever interesse e teste de balanceamento.			
-Papéis e processadores — Cláusula 2 (crítica)
-O SaaS atua como controlador ou operador? Em qual tratamento?
-Se operador, quem é o controlador cliente? O que o contrato com o cliente define?
-Listar todos os processadores / suboperadores: nome, função, dado acessado, país de hospedagem.
-Ex: gateway de pagamento, provedor de nuvem, ferramenta de e-mail, analytics, suporte, IA / LLM, WhatsApp API.
-Existe transferência internacional? Para qual país, qual mecanismo (cláusulas-padrão, decisão de adequação)?
-Ciclo de vida e retenção — Cláusula 3 (crítica)
-Prazo de retenção por categoria de dado.
-O que acontece quando: usuário cancela assinatura, contrato encerra, conta é excluída, titular solicita eliminação.
-Exceção de retenção: obrigação legal / regulatória, exercício de direitos, prevenção a fraude. Especificar qual norma e prazo.
-Destino: eliminação, anonimização, arquivamento. Prazo em dias. Responsável pela execução.
-Backup: prazo de expurgo do backup após eliminação.
-Direitos do titular (LGPD art. 18)
-Canal de atendimento: e-mail, formulário, prazo de resposta (15 dias).
-Como exercer: confirmação, acesso, correção, anonimização, portabilidade, eliminação, revogação de consentimento, oposição, revisão de decisão automatizada.
-Identificação do solicitante: como validar sem coletar dado excessivo.
-Segurança, incidentes e cookies
-Medidas: criptografia, controle de acesso, logs, MFA, segregação de ambientes.
-Incidente: como notificar titular e ANPD, em qual prazo.
-Cookies / trackers: quais, finalidade, como gerenciar, link para política de cookies se separada.
-Fase 2 - Validação
-Antes de entregar, checar:
+#### 1. Inventário de dados coletados
+* **Dados pessoais comuns:** quais atributos são coletados (ex: nome, e-mail, CPF, telefone, endereço, dados de cobrança, IP, user-agent, logs de auditoria, cookies).
+* **Dados pessoais sensíveis (art. 5º, II, LGPD):** há coleta de biometria, saúde, origem racial, convicção religiosa ou dado genético? Se sim, sinalizar necessidade de base legal específica do art. 11.
+* **Dados de crianças e adolescentes (art. 14, LGPD):** o sistema permite cadastro de menores de 18 anos? Se sim, qual a idade mínima e o mecanismo técnico de verificação de consentimento parental?
+* **Origem:** dados inseridos pelo titular, coletados via telemetria/logs ou recebidos via integração/API de terceiros (especificar quais).
 
- Cada dado tem finalidade específica + base legal específica.
- Nenhuma frase genérica de finalidade.
- Controlador x operador definido.
- Todos os processadores listados com função e dado.
- Retenção definida por dado, com regra de cancelamento / exclusão / fim de contrato.
- Exceção de retenção legal identificada por norma.
- Direitos do titular com canal e prazo.
- Transferência internacional declarada ou marcada como inexistente.
- Data de última atualização e histórico de versões.
- Linguagem clara, sem jargão desnecessário.
-Se um item falhar, retornar ao usuário com a pergunta exata que falta. Não preencher com placeholder.
+#### 2. Finalidade e base legal por dado (Cláusula crítica 1)
+Mapear cada categoria de dado na estrutura:
+`Dado | Finalidade técnica específica | Base legal (LGPD art. 7º ou 11) | Impacto se não fornecido`
 
-Fase 3 - Saída
-Entregar em Markdown, nesta ordem:
+* **Válido:** `E-mail | Autenticação de usuário e recuperação de senha | Execução de contrato (art. 7º, V) | Impede criação de conta e login`
+* **Inválido:** `Dados de uso | Melhorar a experiência na plataforma`
+* **Nota sobre Legítimo Interesse (art. 7º, IX):** se utilizado, exigir descrição da finalidade legítima, expectativa do titular e confirmação de existência do teste de balanceamento (LIA).
 
-Cabeçalho: Controlador, CNPJ, contato, DPO, data de atualização, versão.
-Resumo em tabela: Dado | Finalidade | Base legal | Retenção | Compartilhado com.
-1. Dados coletados
-2. Finalidade e base legal — uma subseção por finalidade.
-3. Controlador, operador e processadores — tabela de processadores.
-4. Compartilhamento e transferência internacional
-5. Retenção e eliminação — incluindo cancelamento, exclusão de conta, fim de contrato, backup.
-6. Direitos do titular e como exercer
-7. Segurança
-8. Cookies e tecnologias semelhantes
-9. Menores (se aplicável, ou declarar não direcionado a menores)
-10. Alterações da política e contato
-Ao final, incluir:
+#### 3. Papéis na operação e subprocessadores (Cláusula crítica 2)
+* **Papel do SaaS:** atua como **Controlador** (ex: dados de cadastro e faturamento do cliente), **Operador** (ex: dados finais inseridos pelo cliente B2B na plataforma) ou ambos? Quando Operador, como o contrato principal/termos de uso delimitam a instrução do Controlador?
+* **Subprocessadores e infraestrutura:** listar todos os serviços externos que processam ou armazenam dados (`Fornecedor | Função na arquitetura | Dados acessados | País do servidor`). Cobrir: cloud/hospedagem, banco de dados, gateway de pagamento, mensageria/e-mail, analytics, suporte, APIs de IA/LLM (informar se há retenção para treino de modelos) e APIs de comunicação (ex: WhatsApp).
+* **Transferência internacional (Resolução ANPD nº 19/2024):** para serviços hospedados fora do Brasil (ex: EUA/Europa), indicar o país de destino e o mecanismo adotado (Cláusulas-Padrão Contratuais da ANPD, país com nível adequado ou consentimento específico).
 
-Minuta técnica gerada a partir do mapeamento informado. Não substitui revisão jurídica. Validar com advogado antes de publicar.
+#### 4. Ciclo de vida, retenção e descarte (Cláusula crítica 3)
+* **Retenção ativa:** tempo de armazenamento de cada categoria de dado enquanto a conta estiver ativa.
+* **Gatilhos de encerramento:** o que ocorre com os dados nos eventos de (a) cancelamento de assinatura, (b) fim de contrato B2B, (c) exclusão de conta pelo usuário e (d) solicitação direta de eliminação pelo titular.
+* **Exceções legais de guarda:** especificar dados retidos após o encerramento e sua base normativa (ex: registros de acesso à aplicação por 6 meses conforme art. 15 do Marco Civil da Internet; dados fiscais/notas fiscais por 5 anos conforme legislação tributária).
+* **Procedimento técnico de descarte:** método aplicado (hard delete, expurgo lógico ou anonimização irreversível), prazo em dias corridos após o gatilho, área/sistema responsável e janela de expurgo dos snapshots de backup.
 
-Tom
-Formal, direto, técnico. Frases curtas. Sem marketing. Sem "não é X, é Y".
+#### 5. Direitos do titular (LGPD art. 18)
+* **Canal e SLA:** meio oficial de solicitação (e-mail, portal ou endpoint) e prazo de atendimento (15 dias para declaração completa, conforme art. 19, II, da LGPD).
+* **Fluxo operacional:** como são atendidos pedidos de acesso, correção, portabilidade (formato estruturado exportável), revogação de consentimento, oposição e revisão de decisões automatizadas.
+* **Autenticação do solicitante:** mecanismo usado para confirmar a identidade do titular sem exigir coleta excessiva de novos documentos.
 
-Formato de correção
-Se o usuário corrigir, usar formato ping-pong:
-<texto> = linha a analisar
-// comentário = correção
-Sem suposição. Sem parágrafo longo sobre premissa errada.
+#### 6. Segurança, incidentes e rastreamento
+* **Controles técnicos:** criptografia em trânsito (TLS) e em repouso, controle de acesso (RBAC/IAM), MFA, isolamento de dados (multi-tenancy) e trilhas de auditoria.
+* **Gestão de incidentes (Resolução ANPD nº 15/2024):** fluxo de resposta e comunicação à ANPD e aos titulares em caso de incidente com risco ou dano relevante (prazo legal de 3 dias úteis, ou 6 dias úteis para agentes de pequeno porte).
+* **Cookies e SDKs:** lista de cookies/trackers utilizados (estritamente necessários, analíticos, marketing), finalidade e mecanismo de opt-out/gerenciamento.
 
-Referência
-Estrutura das 3 cláusulas críticas baseada em conteúdo de @lailadaraujo sobre política de privacidade de SaaS: (1) base legal específica por finalidade, (2) definição controlador/operador + descrição de processadores, (3) destino dos dados no cancelamento / exclusão / fim de contrato.
+### Fase 2 - Checklist de validação
+Antes de compilar a saída, verificar se todos os critérios abaixo são verdadeiros:
+
+- [ ] Todos os dados possuem finalidade técnica específica e base legal da LGPD.
+- [ ] Zero frases vagas ou genéricas de finalidade.
+- [ ] Distinção clara entre atuação como Controlador e Operador.
+- [ ] Todos os subprocessadores listados com função, dados tratados e país de hospedagem.
+- [ ] Transferência internacional documentada com mecanismo da Resolução ANPD nº 19/2024 (ou ausência confirmada).
+- [ ] Regras de retenção e expurgo definidas por categoria, incluindo backup e exceções legais (Marco Civil / Fiscal).
+- [ ] Canal de exercício de direitos e identidade/contato do Encarregado (DPO) preenchidos.
+- [ ] Data de vigência e controle de versão incluídos.
+
+Se qualquer item falhar, retornar exclusivamente a pergunta objetiva referente ao dado ausente.
+
+### Fase 3 - Formato de saída
+Entregar o documento em Markdown limpo, estruturado na seguinte ordem:
+
+1. **Cabeçalho:** Controlador, CNPJ, endereço, canal/Encarregado (DPO), versão do documento e data de atualização.
+2. **Matriz resumo (Tabela):** `Categoria de Dado | Finalidade | Base Legal | Retenção | Compartilhamento`
+3. **Seções textuais:**
+   * `1. Dados Pessoais Coletados`
+   * `2. Finalidades e Bases Legais` (subdividido por finalidade operacional)
+   * `3. Papéis na Operação e Subprocessadores` (incluindo tabela de fornecedores)
+   * `4. Transferência Internacional de Dados`
+   * `5. Retenção, Cancelamento e Eliminação` (incluindo prazos de backup e guarda legal)
+   * `6. Direitos dos Titulares e Como Exercê-los`
+   * `7. Segurança da Informação e Resposta a Incidentes`
+   * `8. Cookies e Tecnologias de Rastreamento`
+   * `9. Tratamento de Dados de Menores`
+   * `10. Alterações desta Política e Contato`
+4. **Aviso final obrigatório:**
+   > *Nota técnica: Esta minuta foi gerada a partir do mapeamento operacional informado pela equipe de produto/engenharia. Não constitui parecer jurídico e deve ser validada por advogado antes da publicação.*
+
+## Estilo e formato de revisão
+* **Tom:** técnico, objetivo e direto. Frases curtas. Sem linguagem promocional.
+* **Correções pontuais:** quando o usuário solicitar ajuste em trecho específico, responder no formato:
+
+    <trecho analisado> // correção objetiva
+
+## Referências normativas
+* Lei nº 13.709/2018 — Lei Geral de Proteção de Dados Pessoais (LGPD).
+* Lei nº 12.965/2014 — Marco Civil da Internet (art. 15 — guarda de registros de acesso).
+* Resolução CD/ANPD nº 2/2022 — Regulamento de aplicação da LGPD para agentes de pequeno porte.
+* Resolução CD/ANPD nº 15/2024 — Regulamento de Comunicação de Incidente de Segurança (CIS).
+* Resolução CD/ANPD nº 18/2024 — Regulamento sobre a atuação do Encarregado pelo Tratamento de Dados Pessoais.
+* Resolução CD/ANPD nº 19/2024 — Regulamento de Transferência Internacional de Dados.
