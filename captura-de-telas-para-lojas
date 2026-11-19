@@ -1,0 +1,48 @@
+# captura-midia-lojas
+
+## Descrição
+Gera roteiros e comandos de terminal para captura automatizada de screenshots e gravação de vídeos de tela diretamente via ponte nativa do sistema operacional (`adb` para Android e `xcrun simctl` para iOS), incluindo limpeza de barra de status e redimensionamento para os padrões obrigatórios da App Store Connect e Google Play Console.
+
+* **Quando usar:** geração de ativos visuais (prints e vídeos de pré-visualização) via CLI a partir de dispositivo físico ou emulador/simulador para submissão nas lojas.
+* **Quando não usar:** edição gráfica avançada (criação de mockups 3D, banners promocionais com textos de marketing no Figma) ou testes automatizados de UI end-to-end (Appium/Maestro/Detox — embora possa ser combinada com eles).
+
+## Princípio operacional
+Capturas manuais geram resoluções fora do padrão das lojas, barras de status poluídas e arquivos rejeitados no upload. Toda captura deve ser executada via CLI nativo do SO, com estado visual controlado e pós-processamento determinístico de resolução e codec.
+
+## Proibições
+* Inferir resoluções de dispositivos ou proporções de tela sem confirmar as plataformas alvo.
+* Gerar comandos dependentes de ferramentas GUI quando o fluxo puder ser resolvido via CLI nativo (`adb`, `xcrun simctl`, `ffmpeg`, `sips`).
+* Entregar PNGs com canal alpha (transparência) para a App Store (causa rejeição imediata no App Store Connect).
+* Gerar o script final sem validar o ambiente e os fluxos de tela na Fase 0 e Fase 1.
+
+## Fluxo obrigatório
+
+### Fase 0 - Verificação de ambiente
+Confirmar os itens abaixo antes de gerar qualquer comando. Se faltar qualquer dado, interromper e perguntar:
+
+1. **Plataformas alvo:** Android (Google Play), iOS (App Store) ou ambas.
+2. **Ambiente de execução disponível:**
+   * **Android:** dispositivo físico conectado via ADB ou emulador Android Studio (AVD).
+   * **iOS:** macOS com Xcode Command Line Tools (`xcrun simctl`) e simuladores instalados.
+3. **Ferramentas auxiliares instaladas:** `ffmpeg` (para conversão/corte de vídeo) e `sips` (nativo macOS) ou `imagemagick` (para ajuste de resolução e remoção de canal alpha).
+4. **Tipo de ativo necessário:** apenas screenshots, apenas vídeo de pré-visualização (*App Preview* / *Promo Video*), ou ambos.
+
+### Fase 1 - Questionário de mapeamento
+Coletar item a item. Não avançar com lacunas.
+
+#### 1. Especificações de tela e dispositivos (Cláusula crítica 1)
+* **Tamanhos de tela obrigatórios:**
+  * **iOS (App Store):** confirmar se a submissão exige **6.9"** (iPhone 16 Pro Max — `1320x2868` ou `1290x2796`), **6.5"** (`1284x2778` ou `1242x2688`) e/ou **iPad 13"** (`2064x2752` ou `2048x2732`).
+  * **Android (Google Play):** confirmar orientação (retrato `1080x1920` / `1440x2560` ou paisagem) e se há entrega para tablet (7" ou 10").
+* **Quantidade de telas:** quantos screenshots serão capturados por plataforma (mínimo 2, máximo 10 na App Store; mínimo 2, máximo 8 por tipo de dispositivo no Google Play).
+
+#### 2. Padronização visual do sistema (Cláusula crítica 2)
+* **Limpeza da barra de status (Status Bar Override):**
+  * **Android:** confirmar permissão para ativar `sysui_demo` via ADB (fixar relógio, bateria 100%, sinal cheio e ocultar notificações).
+  * **iOS:** confirmar uso de `xcrun simctl status_bar` (fixar horário `9:41`, Wi-Fi cheio, operadora limpa e bateria 100%).
+* **Tema da interface:** captura em Light Mode, Dark Mode ou ambos (no iOS via `simctl ui <udid> appearance dark/light`; no Android via `cmd uimode night yes/no`).
+
+#### 3. Roteiro de captura e especificações de vídeo (Cláusula crítica 3)
+* **Sequência de telas:** listar as telas exatas na ordem de exibição na loja (ex: `01_home`, `02_busca`, `03_detalhes`, `04_checkout`).
+* **Parâmetros de vídeo (se aplicável):**
+  * **Duração:** App Store exige entre **15 e
