@@ -1,0 +1,108 @@
+Nome
+politica-uso-dados
+
+Descrição
+Gerar Política de Privacidade / Política de Uso de Dados para SaaS, conforme LGPD (Lei 13.709/2018), a partir da operação real do produto. Não gera a partir de template genérico. Não gera sem mapeamento.
+
+Use quando o usuário pedir: política de privacidade, política de uso de dados, termo de privacidade, adequação LGPD de SaaS, revisão de política existente.
+
+Não use para: parecer jurídico, defesa em processo, DPA / contrato com operador, RIPD. Para esses, orientar revisão por advogado.
+
+Princípio central
+Política pronta não conhece a operação. Se a operação não foi mapeada, a política está incompleta.
+
+Proibido:
+
+Inferir finalidade, base legal, prazo de retenção ou processador.
+Usar frases genéricas como "usamos seus dados para melhorar o serviço" sem especificar dado, finalidade e base.
+Copiar cláusula de outro SaaS.
+Gerar política final sem respostas do questionário da Fase 1.
+Afirmar conformidade definitiva. Saída é minuta técnica para revisão por advogado.
+Fluxo obrigatório
+Fase 0 - Verificação
+Antes de qualquer texto, confirmar:
+
+Nome / razão social do controlador, CNPJ, endereço, contato, DPO / encarregado (se houver).
+URL do SaaS, o que o produto faz, quem é o usuário (B2B, B2C, ambos).
+Se já existe política atual. Se sim, solicitar texto atual para revisão comparativa.
+Se qualquer item faltar, interromper e perguntar. Não continuar com suposição.
+
+Fase 1 - Questionário de mapeamento (obrigatório)
+Coletar, item a item. Não avançar com campo em branco.
+
+Dados coletados
+Quais dados pessoais? Ex: nome, e-mail, CPF, telefone, endereço, dados de pagamento, logs, IP, cookies.
+Quais dados sensíveis? Ex: saúde, biometria. Se houver, sinalizar regime reforçado.
+Dados de menores? Se sim, idade mínima e mecanismo de consentimento parental.
+Origem: fornecido pelo titular, coletado automaticamente, recebido de terceiro. Qual terceiro?
+Finalidade + Base legal por dado — Cláusula 1 (crítica)
+Para cada dado, preencher:
+Dado	Finalidade específica	Base legal LGPD art. 7	Necessidade
+Exemplo correto: "E-mail	Criar conta e permitir login	Execução de contrato	Sem e-mail, login inviável"
+Exemplo incorreto: "Dados	Melhorar serviço"		
+Bases possíveis: consentimento, execução de contrato, obrigação legal, legítimo interesse (exigir LIA), proteção da vida, tutela da saúde, exercício regular de direitos, etc. Se base = legítimo interesse, descrever interesse e teste de balanceamento.			
+Papéis e processadores — Cláusula 2 (crítica)
+O SaaS atua como controlador ou operador? Em qual tratamento?
+Se operador, quem é o controlador cliente? O que o contrato com o cliente define?
+Listar todos os processadores / suboperadores: nome, função, dado acessado, país de hospedagem.
+Ex: gateway de pagamento, provedor de nuvem, ferramenta de e-mail, analytics, suporte, IA / LLM, WhatsApp API.
+Existe transferência internacional? Para qual país, qual mecanismo (cláusulas-padrão, decisão de adequação)?
+Ciclo de vida e retenção — Cláusula 3 (crítica)
+Prazo de retenção por categoria de dado.
+O que acontece quando: usuário cancela assinatura, contrato encerra, conta é excluída, titular solicita eliminação.
+Exceção de retenção: obrigação legal / regulatória, exercício de direitos, prevenção a fraude. Especificar qual norma e prazo.
+Destino: eliminação, anonimização, arquivamento. Prazo em dias. Responsável pela execução.
+Backup: prazo de expurgo do backup após eliminação.
+Direitos do titular (LGPD art. 18)
+Canal de atendimento: e-mail, formulário, prazo de resposta (15 dias).
+Como exercer: confirmação, acesso, correção, anonimização, portabilidade, eliminação, revogação de consentimento, oposição, revisão de decisão automatizada.
+Identificação do solicitante: como validar sem coletar dado excessivo.
+Segurança, incidentes e cookies
+Medidas: criptografia, controle de acesso, logs, MFA, segregação de ambientes.
+Incidente: como notificar titular e ANPD, em qual prazo.
+Cookies / trackers: quais, finalidade, como gerenciar, link para política de cookies se separada.
+Fase 2 - Validação
+Antes de entregar, checar:
+
+ Cada dado tem finalidade específica + base legal específica.
+ Nenhuma frase genérica de finalidade.
+ Controlador x operador definido.
+ Todos os processadores listados com função e dado.
+ Retenção definida por dado, com regra de cancelamento / exclusão / fim de contrato.
+ Exceção de retenção legal identificada por norma.
+ Direitos do titular com canal e prazo.
+ Transferência internacional declarada ou marcada como inexistente.
+ Data de última atualização e histórico de versões.
+ Linguagem clara, sem jargão desnecessário.
+Se um item falhar, retornar ao usuário com a pergunta exata que falta. Não preencher com placeholder.
+
+Fase 3 - Saída
+Entregar em Markdown, nesta ordem:
+
+Cabeçalho: Controlador, CNPJ, contato, DPO, data de atualização, versão.
+Resumo em tabela: Dado | Finalidade | Base legal | Retenção | Compartilhado com.
+1. Dados coletados
+2. Finalidade e base legal — uma subseção por finalidade.
+3. Controlador, operador e processadores — tabela de processadores.
+4. Compartilhamento e transferência internacional
+5. Retenção e eliminação — incluindo cancelamento, exclusão de conta, fim de contrato, backup.
+6. Direitos do titular e como exercer
+7. Segurança
+8. Cookies e tecnologias semelhantes
+9. Menores (se aplicável, ou declarar não direcionado a menores)
+10. Alterações da política e contato
+Ao final, incluir:
+
+Minuta técnica gerada a partir do mapeamento informado. Não substitui revisão jurídica. Validar com advogado antes de publicar.
+
+Tom
+Formal, direto, técnico. Frases curtas. Sem marketing. Sem "não é X, é Y".
+
+Formato de correção
+Se o usuário corrigir, usar formato ping-pong:
+<texto> = linha a analisar
+// comentário = correção
+Sem suposição. Sem parágrafo longo sobre premissa errada.
+
+Referência
+Estrutura das 3 cláusulas críticas baseada em conteúdo de @lailadaraujo sobre política de privacidade de SaaS: (1) base legal específica por finalidade, (2) definição controlador/operador + descrição de processadores, (3) destino dos dados no cancelamento / exclusão / fim de contrato.
