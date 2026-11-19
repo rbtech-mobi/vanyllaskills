@@ -1,0 +1,86 @@
+# release-notes-e-metadados
+
+## Descrição
+Converte histórico técnico de commits (`git log`), pull requests ou changelogs de engenharia em notas de lançamento (*What's New* / *Release Notes*) e textos de ficha de loja (título, subtítulo, descrição curta e descrição completa) dentro dos limites exatos de caracteres e regras editoriais da App Store Connect e Google Play Console.
+
+* **Quando usar:** preparação de nova release nas lojas, tradução de commits técnicos em benefício funcional para o usuário final, ajuste de textos de ficha de loja para evitar rejeição por spam de palavras-chave ou promessas não verificáveis.
+* **Quando não usar:** geração de changelog interno para desenvolvedores (Keep a Changelog técnico) ou campanhas de tráfego pago.
+
+## Princípio operacional
+Notas de versão genéricas como *"Melhorias de desempenho e correções de bugs"* reduzem conversão e desperdiçam espaço de indexação. Ao mesmo tempo, textos com linguagem promocional exagerada, preços no título ou menção a plataformas concorrentes causam rejeição imediata na revisão das lojas. Toda entrega deve partir exclusivamente das alterações reais entregues no código.
+
+## Proibições
+* Inventar funcionalidades, correções ou melhorias de performance que não constem no diff/changelog fornecido.
+* Utilizar expressões proibidas pelas diretrizes das lojas (ex: *"melhor app"*, *"grátis"* no título, preços explícitos na descrição fixa, menção a *"Android"* na App Store ou *"iOS"* no Google Play).
+* Ultrapassar o limite estrito de caracteres de cada campo (contagem validada antes da entrega).
+* Gerar a saída final sem receber o escopo real da release na Fase 0 e Fase 1.
+
+## Fluxo obrigatório
+
+### Fase 0 - Verificação de escopo
+Confirmar os itens abaixo antes de iniciar. Se faltar qualquer dado, interromper e perguntar:
+
+1. **Plataformas alvo:** App Store (iOS), Google Play (Android) ou ambas.
+2. **Tipo de entrega:** apenas Notas da Versão (*What's New*), Ficha Completa da Loja (título, subtítulo/descrição curta, descrição longa e palavras-chave) ou ambos.
+3. **Idiomas:** quais idiomas precisam ser gerados (ex: `pt-BR`, `en-US`, `es-419`).
+4. **Fonte técnica das alterações:** colar o `git log` entre tags, resumo dos PRs mergeados ou lista de funcionalidades/fixes da build.
+
+### Fase 1 - Questionário de mapeamento
+Coletar item a item. Não avançar com lacunas.
+
+#### 1. Triagem técnica da release (Cláusula crítica 1)
+* **Novas funcionalidades visíveis ao usuário:** o que o usuário passa a conseguir fazer nesta versão que não fazia antes?
+* **Correções de bugs percebidos:** quais falhas que afetavam o fluxo do usuário foram resolvidas (ex: erro no login biométrico, falha ao exportar PDF)?
+* **Alterações puramente internas (excluir das notas públicas):** confirmar quais itens são refatoração, atualização de dependências, CI/CD ou ajustes de lint para serem descartados do texto final.
+
+#### 2. Metadados da ficha de loja (se solicitado na Fase 0) (Cláusula crítica 2)
+* **Nome do aplicativo:** limite rígido de **30 caracteres** (App Store e Google Play).
+* **Subtítulo (Apple — máx. 30 caracteres) / Descrição curta (Google Play — máx. 80 caracteres):** proposta de valor direta sem superlativos não comprovados.
+* **Keywords (Apple — máx. 100 caracteres):** termos separados por vírgula, sem espaços após a vírgula, sem repetir palavras já presentes no Nome ou Subtítulo, e sem nomes de marcas concorrentes.
+* **Categoria e público:** categoria principal nas lojas e se o app exige assinatura/compras internas (para incluir o aviso obrigatório de renovação automática na descrição completa da App Store).
+
+#### 3. Limites de caracteres por plataforma (Cláusula crítica 3)
+* **Notas da Versão (What's New):**
+  * **Google Play:** máximo absoluto de **500 caracteres** por idioma (incluindo espaços e quebras de linha).
+  * **App Store:** máximo de **4.000 caracteres** (recomendado manter entre 300 e 800 caracteres objetivos nas primeiras linhas antes do botão *"mais"*).
+* **Descrição completa:** máximo de **4.000 caracteres** em ambas as lojas.
+
+### Fase 2 - Checklist de validação editorial e técnica
+Antes de compilar a saída, verificar se todos os critérios abaixo são verdadeiros:
+
+- [ ] Contagem exata de caracteres validada e exibida ao lado de cada bloco (zero estouro de limite).
+- [ ] Nenhum commit interno (refactor, lint, bump de SDK) vazou para o texto voltado ao usuário final.
+- [ ] Nenhuma funcionalidade não listada na Fase 1 foi inventada.
+- [ ] Zero menção a plataformas concorrentes (ex: sem "Android" no bloco iOS; sem "iPhone/Apple" no bloco Android).
+- [ ] Zero palavras proibidas ou spam de palavras-chave repetidas em excesso na descrição.
+- [ ] Se o app possui assinatura auto-renovável, o bloco da App Store inclui a cláusula padrão de cobrança na conta Apple ID e cancelamento nas configurações.
+
+Se qualquer item falhar, retornar exclusivamente a pergunta objetiva referente ao dado ausente.
+
+### Fase 3 - Formato de saída
+Entregar em Markdown limpo, estruturado na seguinte ordem por idioma solicitado:
+
+1. **Bloco Google Play Console:**
+   * `Título (XX/30 caracteres)`
+   * `Descrição Curta (XX/80 caracteres)` *(se solicitado)*
+   * `Notas da Versão — What's New (XX/500 caracteres)`
+   * `Descrição Completa (XX/4000 caracteres)` *(se solicitado)*
+2. **Bloco App Store Connect:**
+   * `Nome (XX/30 caracteres)`
+   * `Subtítulo (XX/30 caracteres)` *(se solicitado)*
+   * `Keywords (XX/100 caracteres)` *(se solicitado)*
+   * `Novidades — What's New (XX/4000 caracteres)`
+   * `Descrição (XX/4000 caracteres)` *(se solicitado)*
+3. **Log de descarte técnico:**
+   * Lista curta dos commits/itens técnicos ignorados por não terem impacto funcional direto para o usuário final (para auditoria da equipe de produto).
+
+## Estilo e formato de revisão
+* **Tom:** claro, direto e focado em ação do usuário. Frases curtas em voz ativa. Sem exageros de marketing.
+* **Correções pontuais:** quando o usuário solicitar ajuste em trecho específico, responder no formato:
+
+    <trecho analisado> // correção objetiva
+
+## Referências técnicas e de plataforma
+* Apple App Store Review Guidelines — Seção 2.3 (*Accurate Metadata*) e Seção 3.1.2 (*Subscriptions*).
+* Google Play Developer Program Policies — *Metadata Policy* (limites de caracteres e proibição de keyword stuffing/superlativos).
+* Conventional Commits Specification (`feat:`, `fix:`, `perf:`, `refactor:`, `chore:`).
