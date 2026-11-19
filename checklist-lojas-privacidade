@@ -1,0 +1,87 @@
+# checklist-lojas-privacidade
+
+## Descrição
+Traduz o inventário técnico de dados, permissões e SDKs de um aplicativo mobile (iOS e Android) nas respostas exatas e auditáveis exigidas pelos formulários **App Privacy (Privacy Nutrition Labels)** da Apple App Store Connect e **Data Safety** do Google Play Console.
+
+* **Quando usar:** primeira submissão de aplicativo mobile nas lojas, atualização de versão que inclua novos SDKs ou permissões, auditoria de divergência entre o código-fonte/política de privacidade e a ficha pública da loja.
+* **Quando não usar:** redação de Política de Privacidade completa (usar `politica-dados-mobile`), parecer jurídico ou análise de contratos B2B.
+
+## Princípio operacional
+As lojas auditam o binário do app (`.ipa` e `.aab`) contra as declarações preenchidas no painel. Omitir um dado coletado por um SDK de terceiros (analytics, crash reporting, ads) resulta em rejeição imediata ou remoção do aplicativo. O mapeamento deve refletir o comportamento real de todos os pacotes compilados.
+
+## Proibições
+* Assumir que um SDK de terceiros não coleta dados sem verificar sua documentação oficial de privacidade.
+* Confundir as definições de **Coleta** e **Compartilhamento** do Google Play com as definições de **Rastreamento (Tracking)** e **Vinculação ao Usuário** da Apple.
+* Preencher formulários com respostas genéricas sem rastreabilidade por SDK ou endpoint.
+* Gerar o resultado final com campos pendentes da Fase 0 ou Fase 1.
+
+## Fluxo obrigatório
+
+### Fase 0 - Verificação de escopo
+Confirmar os itens abaixo antes de iniciar o mapeamento. Se faltar qualquer dado, interromper e perguntar:
+
+1. **Lojas alvo:** App Store Connect (iOS), Google Play Console (Android) ou ambas.
+2. **Arquitetura e autenticação:** o aplicativo possui sistema de login/conta de usuário ou funciona de forma 100% anônima/local?
+3. **Fonte de verdade:** o usuário já possui o mapeamento gerado pela skill `politica-dados-mobile` (ou lista de dependências `pubspec.yaml`, `package.json`, `Podfile`, `build.gradle`)? Se sim, solicitar o arquivo ou texto.
+
+### Fase 1 - Questionário de mapeamento técnico
+Coletar item a item. Não avançar com lacunas.
+
+#### 1. Inventário de dados e SDKs compilados (Cláusula crítica 1)
+Listar cada dado coletado pelo backend próprio e por cada SDK de terceiros embutido no app (`Fonte / SDK | Categoria de Dado | Finalidade Técnica`):
+* **Dados pessoais e financeiros:** nome, e-mail, telefone, endereço, CPF, histórico de compras/assinaturas.
+* **Localização:** aproximada vs. precisa.
+* **Conteúdo gerado pelo usuário:** fotos, vídeos, áudios, arquivos, mensagens, textos inseridos em prompts de IA.
+* **Identificadores:** User ID interno, Device ID, IDFA (iOS), AAID / Advertising ID (Android), token de push (APNs/FCM).
+* **Diagnóstico e uso:** logs de falha (*crash logs*), métricas de desempenho, interações de tela, histórico de busca no app.
+
+#### 2. Critérios específicos da Apple App Store Connect (Cláusula crítica 2)
+Para cada categoria de dado identificada no item 1, definir:
+* **Data Used to Track You (Rastreamento):** o dado é cruzado com dados de terceiros para publicidade direcionada, mensuração de anúncios ou enviado a *data brokers* (exige prompt ATT no iOS)?
+* **Data Linked to You (Vinculado ao usuário):** o dado fica associado à identidade do usuário (User ID, e-mail ou perfil) no banco de dados ou no painel do SDK?
+* **Data Not Linked to You (Não vinculado):** o dado é coletado de forma estritamente anônima/agregada, sem vínculo com conta ou identificador persistente?
+* **Isenção de declaração Apple:** confirmar se algum dado atende simultaneamente aos 4 critérios de isenção da Apple (não usado para tracking, não usado para ads/marketing, coleta infrequente e parte opcional/explícita de formulário enviado pelo usuário).
+
+#### 3. Critérios específicos do Google Play Data Safety (Cláusula crítica 3)
+Para cada categoria de dado identificada no item 1, definir:
+* **Collected (Coletado):** o dado sai do dispositivo do usuário para um servidor próprio ou de terceiro (exceto processamento efêmero em memória que não é armazenado)?
+* **Shared (Compartilhado):** o dado é transferido para terceiros fora do escopo estrito de infraestrutura/processador (ex: redes de anúncios, parceiros de analytics cruzado)? *(Nota: envio para provedor de cloud ou gateway de pagamento operando apenas como processador não conta como "Shared" na regra do Google, mas conta como "Collected").*
+* **Obrigatório vs. Opcional:** o usuário consegue usar o app sem fornecer esse dado, ou há opção de *opt-out* nas configurações?
+* **Práticas globais obrigatórias do Google:**
+  * Todos os dados trafegam criptografados em trânsito (HTTPS/TLS)?
+  * Existe fluxo funcional para o usuário solicitar a exclusão da conta e dos dados (in-app e via URL web)?
+  * Existe canal para solicitar exclusão parcial de dados sem apagar a conta inteira?
+
+### Fase 2 - Checklist de validação cruzada
+Antes de compilar a saída, verificar se todos os critérios abaixo são verdadeiros:
+
+- [ ] Todos os SDKs declarados nas dependências do projeto foram mapeados (incluindo Firebase, AdMob, Sentry, RevenueCat, OneSignal, OpenAI/Gemini, etc.).
+- [ ] Consistência garantida: se há AdMob/redes de ads com anúncios personalizados, `IDFA/AAID` e `Advertising Data` estão marcados corretamente.
+- [ ] Consistência garantida: se há Crashlytics/Sentry, `Crash Logs` e `Device ID` estão marcados como coletados.
+- [ ] Criptografia em trânsito (TLS) e URL de exclusão de conta confirmadas para o Google Play.
+- [ ] Nenhuma contradição entre o que será marcado nas lojas e o texto da Política de Privacidade pública.
+
+Se qualquer item falhar, retornar exclusivamente a pergunta objetiva referente ao dado ausente.
+
+### Fase 3 - Formato de saída
+Entregar em Markdown limpo, estruturado como guia de preenchimento direto para os painéis:
+
+1. **Resumo de Práticas Globais (Google Play Data Safety — Etapa 1):**
+   * Tabela de respostas `Sim / Não` para: Coleta de dados, Criptografia em trânsito, Exclusão de conta e Exclusão parcial de dados.
+2. **Matriz Google Play Console (Data Safety — Etapa 2):**
+   * Tabela: `Categoria Google Play | Tipo de Dado | Coletado? | Compartilhado? | Efêmero? | Obrigatório ou Opcional? | Finalidades (exatas do painel Google) | SDK / Origem`
+3. **Matriz Apple App Store Connect (App Privacy — Nutrition Labels):**
+   * Tabela: `Categoria Apple | Tipo de Dado | Finalidade (exata do painel Apple) | Vinculado ao Usuário? | Usado para Tracking? | SDK / Origem`
+4. **Alertas de Auditoria Pré-Submissão:**
+   * Lista pontual de gatilhos que exigem ação no código (ex: necessidade de prompt ATT no iOS, declaração de `AD_ID` no `AndroidManifest.xml`, preenchimento do `PrivacyInfo.xcprivacy`).
+
+## Estilo e formato de revisão
+* **Tom:** técnico, cirúrgico e direto. Usar exatamente a nomenclatura oficial das categorias dos painéis da Apple e do Google.
+* **Correções pontuais:** quando o usuário solicitar ajuste em trecho específico, responder no formato:
+
+    <trecho analisado> // correção objetiva
+
+## Referências técnicas e de plataforma
+* Apple App Store Connect Help — *App privacy details on the App Store* (categorias e definições de Tracking / Linked).
+* Google Play Console Help — *Provide information for Google Play's Data safety section* (definições de Collected, Shared e Ephemeral).
+* Apple Developer Documentation — *Privacy manifest files (`PrivacyInfo.xcprivacy`)* e *App Tracking Transparency*.
