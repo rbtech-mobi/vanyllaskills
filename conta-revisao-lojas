@@ -1,0 +1,78 @@
+# conta-revisao-lojas
+
+## Descrição
+Gera a documentação operacional de acesso e o roteiro de testes (*App Review Information* na App Store Connect e *App Access* no Google Play Console) para que os revisores das lojas validem funcionalidades protegidas por login, autenticação em dois fatores (2FA), paywalls, hardware externo ou restrições geográficas sem rejeitar o aplicativo por acesso bloqueado.
+
+* **Quando usar:** submissão de qualquer aplicativo que exija login, código SMS/e-mail, assinatura paga, perfil aprovado manualmente (ex: B2B/motorista/médico) ou hardware específico para liberar suas telas principais.
+* **Quando não usar:** apps 100% públicos sem tela de login, paywall ou área restrita.
+
+## Princípio operacional
+Revisores da Apple e do Google têm poucos minutos por build. Se a conta demo expirar, exigir código SMS enviado para um chip físico inexistente, pedir documento real (CPF/CNPJ válido) ou bloquear o acesso atrás de um paywall sem usuário liberado, o app é rejeitado imediatamente por violação de completude (*Guideline 2.1* / *Google Play App Access*).
+
+## Proibições
+* Inventar credenciais fictícias sem confirmar que o usuário de teste existe e está ativo no ambiente de produção da build submetida.
+* Fornecer conta de teste apontando para servidor de `staging`/`dev` se o binário enviado aponta para `production`.
+* Exigir que o revisor crie uma conta nova usando telefone pessoal ou cartão de crédito real para desbloquear o fluxo principal.
+* Gerar o roteiro final com campos pendentes da Fase 0 ou Fase 1.
+
+## Fluxo obrigatório
+
+### Fase 0 - Verificação de escopo
+Confirmar os itens abaixo antes de gerar o documento. Se faltar qualquer dado, interromper e perguntar:
+
+1. **Lojas alvo:** App Store Connect (iOS), Google Play Console (Android) ou ambas.
+2. **Mecanismos de bloqueio do app:** o que impede um usuário recém-instalado de acessar todas as telas? (Ex: login e-mail/senha, login social, OTP via SMS/e-mail, paywall de assinatura, aprovação cadastral manual, pareamento Bluetooth/IoT).
+3. **Ambiente da build:** confirmar que a conta de teste informada funciona no **mesmo backend/ambiente** para o qual o `.ipa` ou `.aab` foi compilado.
+
+### Fase 1 - Questionário de mapeamento operacional
+Coletar item a item. Não avançar com lacunas.
+
+#### 1. Credenciais da conta de demonstração (Cláusula crítica 1)
+* **Usuário / E-mail e Senha:** credenciais permanentes, sem expiração de senha e pré-populadas com dados realistas (evitar telas vazias com *empty states* quebrados).
+* **Bypass de 2FA / OTP (se aplicável):** como o revisor passa pela verificação em duas etapas? (Ex: código fixo liberado no backend como `000000` exclusivamente para o e-mail/telefone demo, ou 2FA desativado para essa conta).
+* **Múltiplos perfis (se aplicável):** se o app possui papéis distintos (ex: *Cliente* vs. *Prestador* ou *Admin* vs. *Operador*), fornecer um par de credenciais para cada perfil obrigatório.
+
+#### 2. Desbloqueio de recursos pagos e restrições (Cláusula crítica 2)
+* **Assinaturas e Paywall:** a conta demo já possui plano ativo/vitalício atribuído no backend, ou o revisor precisa testar o fluxo de compra em ambiente Sandbox (StoreKit / Google Play License Testing)?
+* **Validação de documentos / KYC:** se o cadastro exige CPF, CNPJ ou upload de documento, a conta demo já está com status **Aprovado**? Se o revisor precisar testar o fluxo de envio, quais dados fictícios válidos o backend aceita?
+* **Dependência de hardware ou localização (GPS):** se o app exige geofencing (ex: só funciona em Curitiba) ou dispositivo físico (BLE/NFC/IoT), existe modo de simulação/mock ativável ou vídeo demonstrativo hospedado para anexar no painel da loja?
+
+#### 3. Roteiro de navegação passo a passo (Cláusula crítica 3)
+* **Caminho crítico:** sequência exata de cliques desde a abertura do app até a principal funcionalidade entregue na versão atual (especialmente se houver novidades que precisam ser validadas na revisão).
+
+### Fase 2 - Checklist de validação pré-envio
+Antes de compilar a saída, verificar se todos os critérios abaixo são verdadeiros:
+
+- [ ] Credenciais de login (usuário e senha) testadas e válidas no ambiente de produção da build.
+- [ ] Mecanismo de bypass de SMS/OTP/2FA documentado de forma autoexplicativa.
+- [ ] Recursos pagos/assinaturas acessíveis sem cobrança real ao revisor.
+- [ ] Dados pré-populados na conta demo confirmados para evitar telas em branco.
+- [ ] Limites de caracteres respeitados (App Store *Notes* até 4.000 caracteres; Google Play *App Access Instructions* claro e objetivo por bloco de credencial).
+
+Se qualquer item falhar, retornar exclusivamente a pergunta objetiva referente ao dado ausente.
+
+### Fase 3 - Formato de saída
+Entregar em Markdown limpo, com blocos prontos para copiar e colar direto nos campos das lojas (em inglês técnico padrão de revisão ou português conforme preferência do usuário):
+
+1. **Bloco App Store Connect (`App Review Information`):**
+   * `Sign-In Required`: marcado como **Yes**
+   * `User Name` e `Password`
+   * `Notes`: roteiro direto contendo credenciais extras (se houver múltiplos perfis), código fixo de 2FA, status da assinatura na conta demo, passo a passo de navegação e link de vídeo de demonstração (se houver hardware/geofence).
+2. **Bloco Google Play Console (`App Content > App Access`):**
+   * Opção selecionada: *"All or some functionality in my app is restricted"*
+   * `Instruction Name` (ex: `Conta Demo Completa - Acesso Principal`)
+   * `User Name / Phone` e `Password`
+   * `Additional Instructions`: passo a passo objetivo de login, bypass de OTP e navegação até os recursos restritos.
+3. **Checklist de Sanidade antes de clicar em "Submit for Review":**
+   * 4 verificações rápidas para o desenvolvedor rodar 5 minutos antes da submissão (ex: testar login em aba anônima/instalação limpa, checar se o rate-limit de login não bloqueia o IP da Apple/Google, confirmar que a conta não está logada com sessão única bloqueando segundo acesso).
+
+## Estilo e formato de revisão
+* **Tom:** imperativo, claro e sem ambiguidade (escrito para um revisor humano que não conhece o produto). Frases curtas enumeradas.
+* **Correções pontuais:** quando o usuário solicitar ajuste em trecho específico, responder no formato:
+
+    <trecho analisado> // correção objetiva
+
+## Referências técnicas e de plataforma
+* Apple App Store Review Guidelines — Seção 2.1 (*App Completeness — Demo Account & Hardware Requirements*).
+* App Store Connect Help — *Provide app review information*.
+* Google Play Console Help — *Prepare your app for review (App access instructions)*.
